@@ -1,51 +1,27 @@
 import os
 import shutil
-from generate_page import generate_page  # Make sure this file exists and has your generate_page() function
+from copystatic import copy_files_recursive
+from gencontent import generate_pages_recursive
 
-def copy_recursive(src, dst):
-    """
-    Recursively copies the contents of the src directory into dst.
-    Deletes all existing contents of dst before copying.
-    """
-    # Remove destination directory if it exists
-    if os.path.exists(dst):
-        print(f"Deleting existing directory: {dst}")
-        shutil.rmtree(dst)
+DIR_STATIC = "./static"
+DIR_PUBLIC = "./public"
+DIR_CONTENT = "./content"
+TEMPLATE_PATH = "./template.html"
 
-    # Recreate the destination directory
-    os.mkdir(dst)
-    print(f"Created directory: {dst}")
-
-    # Iterate through all items in the source directory
-    for item in os.listdir(src):
-        src_path = os.path.join(src, item)
-        dst_path = os.path.join(dst, item)
-
-        if os.path.isfile(src_path):
-            shutil.copy(src_path, dst_path)
-            print(f"Copied file: {src_path} → {dst_path}")
-        elif os.path.isdir(src_path):
-            copy_recursive(src_path, dst_path)
-        else:
-            print(f"Skipped unknown item: {src_path}")
 
 def main():
-    src_dir = "static"
-    dst_dir = "public"
+    print("🧹 Deleting old public directory...")
+    if os.path.exists(DIR_PUBLIC):
+        shutil.rmtree(DIR_PUBLIC)
 
-    # 1. Clean and copy static files
-    print("Copying static files...")
-    copy_recursive(src_dir, dst_dir)
+    print("📂 Copying static files to public...")
+    copy_files_recursive(DIR_STATIC, DIR_PUBLIC)
 
-    # 2. Generate main HTML page
-    content_path = "content/index.md"
-    template_path = "template.html"
-    dest_path = os.path.join(dst_dir, "index.html")
+    print("📝 Generating HTML pages from markdown content...")
+    generate_pages_recursive(DIR_CONTENT, TEMPLATE_PATH, DIR_PUBLIC)
 
-    print(f"\nGenerating HTML page from '{content_path}' → '{dest_path}' using '{template_path}'")
-    generate_page(content_path, template_path, dest_path)
+    print("✅ Site generation complete! Your site is ready in 'public/'.")
 
-    print("\n✅ Site generation complete!")
 
 if __name__ == "__main__":
     main()
